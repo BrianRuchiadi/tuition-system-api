@@ -19,6 +19,7 @@
     "@koa/cors": "^3.1.0",
     "dotenv": "^8.2.0",
     "fs-extra": "^9.0.1",
+    "kill-port": "^1.6.1",
     "koa": "^2.13.0",
     "koa-bodyparser": "^4.3.0",
     "koa-respond": "^2.1.0",

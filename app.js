@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import kill from 'kill-port';
 
 import config from './config.js';
 import createApiServer from './lib/servers/api.js';
@@ -25,8 +26,8 @@ async function startApiServer() {
   try {
     const { server, api } = await createApiServer();
 
-    server.listen(4000, () => {
-      console.log('API Server running on https://localhost:4000');
+    server.listen(config.port_api, () => {
+      console.log(`API Server running on ${config.host}:${config.port_api}`);
     });
 
     return api;

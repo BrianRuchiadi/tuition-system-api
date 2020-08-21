@@ -10,11 +10,11 @@ export default new (class RootController extends BaseController {
   async getRootPage(ctx) {
     return this.run(ctx)(async () => {
       const model = await dbeducationauth['user'];
-      const record = await model.create({
-        'username': 'brian',
-        'password': 'something'
-      })
-      console.log('get root page', record);
+      // const record = await model.create({
+      //   'username': 'brian',
+      //   'password': 'something'
+      // })
+      // console.log('get root page', record);
       ctx.ok('Here is root!');
     });
   }
