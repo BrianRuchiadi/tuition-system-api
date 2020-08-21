@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import BaseController from './base';
+import BaseController from './base.js';
 
 export default new (class AuthController extends BaseController {
   constructor() {

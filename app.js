@@ -1,45 +1,77 @@
-import http from 'http';
-import Koa from 'koa';
-import cors from '@koa/cors';
-import Router from 'koa-router';
-import bodyParser from 'koa-bodyparser';
-import respond from 'koa-respond';
-import routerApi from './api/routes';
+import mongoose from 'mongoose';
+
+import config from './config.js';
+import createApiServer from './lib/servers/api.js';
+import createStreamServer from './lib/servers/stream.js';
 
 async function main() {
-  console.log('starting application');
+  console.log('Starting application!');
 
-  const api = new Koa();
-  const server = http.createServer(api.callback());
-  
-  const router = new Router();
-  router.use(routerApi.routes());
-  // api.use(logRequestHandler);
-  api.use(
-    respond({
-      autoMessage: false
-    })
-  );
-  api.use(
-    cors({
-      exposeHeaders: 'Authorization'
-    })
-  );
-  api.use(
-    bodyParser({
-      enableTypes: ['json']
-    })
-  );
-  api.use(router.routes()).use(router.allowedMethods());
-  
-  // Default handler when nothing stopped the chain.
-  // api.use(routeNotFoundHandler);
-  
-  server.listen(3000, () => {
-    console.log('Server running on https://localhost:3000');
-  })
-  
-  // return { server, api };
+  process.on('uncaughtException', error);
+  process.on('unhandledRejection', error);
+  process.on('SIGTERM', error)
+
+  const ready = await checkenv();
+  if (!ready) {
+    console.log('Environment not ready');
+    process.exit(10);
+  }
+
+  await startApiServer();
+  await startStreamServer();
+}
+
+async function startApiServer() {
+  try {
+    const { server, api } = await createApiServer();
+
+    server.listen(4000, () => {
+      console.log('API Server running on https://localhost:4000');
+    });
+
+    return api;
+  } catch (error) {
+    console.log('something wrong in startApiServer', error);
+  }
+}
+
+async function startStreamServer() {
+  try {
+    await createStreamServer();
+  } catch (error) {
+    console.log('something wrong in startStreamServer', error);
+  }
+}
+
+async function error(error) {
+  console.log('error!');
+  console.log(error);
+  switch (error.errno) {
+    case 'EADDRINUSE': console.log(`EADDRINUSE: PORT in use`); break;
+    default: console.log(error.message);
+  }
+
+  console.log('___kill config.port_api', config.port_api);
+  console.log('___kill config.port_api', config.port_stream);
+  console.log('___kill config.port_socket', config.port_socket);
+  kill(config.port_api, 'tcp');
+  kill(config.port_stream, 'tcp');
+  kill(config.port_socker, 'tcp');
+
+  process.exit(1);
+}
+
+async function checkenv() {
+  try {
+    await mongoose.connect(config.mongo_conn_dbeducationauth);
+
+    return true;
+  } catch (error) {
+    // throw error;
+    console.error('errrrr', error.message);
+    // console.error(error.stack);
+    return false;
+  }
 }
 
 main();
